@@ -48,9 +48,11 @@ class proxysql::install {
     mode   => '0600',
   }
 
-  class { 'mysql::client':
-    package_name    => $proxysql::mysql_client_package_name,
-    bindings_enable => false,
+  if $proxysql::manage_client == true {
+    class { 'mysql::client':
+      package_name    => $proxysql::mysql_client_package_name,
+      bindings_enable => false,
+    }
   }
 
 }

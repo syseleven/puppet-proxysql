@@ -371,6 +371,9 @@ Defaults to 'cluster'
 ##### `cluster_password`
 The password ProxySQL will use to connect to the configured mysql_clusters. Defaults to 'cluster'
 
+##### `manage_client`
+Decides if the mysql-client should be managed or not. Defaults to 'true'.
+
 ##### `mysql_client_package_name`
 The name of the mysql client package in your package manager. Defaults to undef
 
