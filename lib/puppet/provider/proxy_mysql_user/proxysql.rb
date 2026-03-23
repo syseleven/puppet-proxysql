@@ -61,9 +61,11 @@ Puppet::Type.type(:proxy_mysql_user).provide(:proxysql, parent: Puppet::Provider
     frontend = @resource.value(:frontend) || 1
     max_connections = @resource.value(:max_connections) || 10_000
 
+    _password = password[0, 1] == '*' ? '\'#{password}\'' : 'CACHING_SHA2_PASSWORD(\'#{password}\')'
+
     query = 'INSERT INTO mysql_users (`username`, `password`, `active`, `use_ssl`, `default_hostgroup`, `default_schema`,  ' \
             '`schema_locked`, `transaction_persistent`, `fast_forward`, `backend`, `frontend`, `max_connections`)  ' \
-            "VALUES ('#{name}', '#{password}', #{active}, #{use_ssl}, #{default_hostgroup}, '#{default_schema}',  " \
+            "VALUES ('#{name}', #{_password}, #{active}, #{use_ssl}, #{default_hostgroup}, '#{default_schema}',  " \
             "#{schema_locked}, #{transaction_persistent}, #{fast_forward}, #{backend}, #{frontend}, #{max_connections})"
     mysql([defaults_file, '-e', query].compact)
     @property_hash[:ensure] = :present
@@ -106,7 +108,10 @@ Puppet::Type.type(:proxy_mysql_user).provide(:proxysql, parent: Puppet::Provider
 
     values = []
     properties.each do |field, value|
-      values.push("`#{field}` = '#{value}'")
+      if field == 'password' and value[0, 1] != '*'
+        values.push("`#{field}` = CACHING_SHA2_PASSWORD('#{value}')")
+      else
+        values.push("`#{field}` = '#{value}'")
     end
     query = "UPDATE mysql_users SET #{values.join(', ')} WHERE username = '#{name}'"
 
