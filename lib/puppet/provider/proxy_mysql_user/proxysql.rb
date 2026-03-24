@@ -62,7 +62,7 @@ Puppet::Type.type(:proxy_mysql_user).provide(:proxysql, parent: Puppet::Provider
     max_connections = @resource.value(:max_connections) || 10_000
 
     #_password = (password[0, 1] == '*') ? "'#{password}'" : "CACHING_SHA2_PASSWORD('#{password}')"
-    _password = "CACHING_SHA2_PASSWORD('#{password}')"
+    _password = "UNHEX('#{password}')"
 
     query = 'INSERT INTO mysql_users (`username`, `password`, `active`, `use_ssl`, `default_hostgroup`, `default_schema`,  ' \
             '`schema_locked`, `transaction_persistent`, `fast_forward`, `backend`, `frontend`, `max_connections`)  ' \
@@ -110,7 +110,7 @@ Puppet::Type.type(:proxy_mysql_user).provide(:proxysql, parent: Puppet::Provider
     values = []
     properties.each do |field, value|
       if field == 'password' # and value[0, 1] != '*'
-        values.push("`#{field}` = CACHING_SHA2_PASSWORD('#{value}')")
+        values.push("`#{field}` = UNHEX('#{value}')")
       else
         values.push("`#{field}` = '#{value}'")
       end
