@@ -108,7 +108,7 @@ Puppet::Type.type(:proxy_mysql_user).provide(:proxysql, parent: Puppet::Provider
 
     values = []
     properties.each do |field, value|
-      if field == 'password' and value[0, 1] != '*'
+      if field == 'password' # and value[0, 1] != '*'
         values.push("`#{field}` = CACHING_SHA2_PASSWORD('#{value}')")
       else
         values.push("`#{field}` = '#{value}'")
