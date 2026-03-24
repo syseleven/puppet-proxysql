@@ -15,7 +15,7 @@ Puppet::Type.type(:proxy_mysql_user).provide(:proxysql, parent: Puppet::Provider
     # To reduce the number of calls to MySQL we collect all the properties in
     # one big swoop.
     users.map do |name|
-      query = "SELECT password, active, use_ssl, default_hostgroup, default_schema, schema_locked, transaction_persistent, fast_forward, backend, frontend, max_connections FROM mysql_users WHERE username = '#{name}'"
+      query = "SELECT HEX(password), active, use_ssl, default_hostgroup, default_schema, schema_locked, transaction_persistent, fast_forward, backend, frontend, max_connections FROM mysql_users WHERE username = '#{name}'"
 
       @password, @active, @use_ssl, @default_hostgroup, @default_schema,
       @schema_locked, @transaction_persistent, @fast_forward, @backend, @frontend,
@@ -109,7 +109,8 @@ Puppet::Type.type(:proxy_mysql_user).provide(:proxysql, parent: Puppet::Provider
 
     values = []
     properties.each do |field, value|
-      if field == 'password' # and value[0, 1] != '*'
+      # and value[0, 1] != '*'
+      if field == 'password'
         values.push("`#{field}` = UNHEX('#{value}')")
       else
         values.push("`#{field}` = '#{value}'")
