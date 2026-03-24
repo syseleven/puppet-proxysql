@@ -118,6 +118,7 @@ Puppet::Type.type(:proxy_mysql_user).provide(:proxysql, parent: Puppet::Provider
     end
     query = "UPDATE mysql_users SET #{values.join(', ')} WHERE username = '#{name}'"
 
+    print(query)
     mysql([defaults_file, '-e', query].compact)
   end
 
