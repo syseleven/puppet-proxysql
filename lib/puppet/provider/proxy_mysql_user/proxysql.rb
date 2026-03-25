@@ -17,7 +17,7 @@ Puppet::Type.type(:proxy_mysql_user).provide(:proxysql, parent: Puppet::Provider
     users.map do |name|
       query = "SELECT HEX(password), active, use_ssl, default_hostgroup, default_schema, schema_locked, transaction_persistent, fast_forward, backend, frontend, max_connections FROM mysql_users WHERE username = '#{name}'"
 
-      SELECT username, CASE WHEN UPPER(SUBSTR(password, 2, 1)) = 'B' THEN HEX(password) ELSE password END AS password FROM mysql_users;
+      #SELECT username, CASE WHEN UPPER(SUBSTR(password, 2, 1)) = 'B' THEN HEX(password) ELSE password END AS password FROM mysql_users;
 
       @password, @active, @use_ssl, @default_hostgroup, @default_schema,
       @schema_locked, @transaction_persistent, @fast_forward, @backend, @frontend,
