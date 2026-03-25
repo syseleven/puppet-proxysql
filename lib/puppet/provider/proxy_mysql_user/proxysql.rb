@@ -133,6 +133,10 @@ Puppet::Type.type(:proxy_mysql_user).provide(:proxysql, parent: Puppet::Provider
     @property_flush[:password] = value
   end
 
+  def password_type=(value)
+    @property_flush[:password_type] = value
+  end
+
   def active=(value)
     @property_flush[:active] = value
   end
