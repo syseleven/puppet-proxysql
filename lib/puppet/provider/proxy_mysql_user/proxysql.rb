@@ -17,6 +17,8 @@ Puppet::Type.type(:proxy_mysql_user).provide(:proxysql, parent: Puppet::Provider
     users.map do |name|
       query = "SELECT HEX(password), active, use_ssl, default_hostgroup, default_schema, schema_locked, transaction_persistent, fast_forward, backend, frontend, max_connections FROM mysql_users WHERE username = '#{name}'"
 
+      SELECT username, CASE WHEN UPPER(SUBSTR(password, 2, 1)) = 'B' THEN HEX(password) ELSE password END AS password FROM mysql_users;
+
       @password, @active, @use_ssl, @default_hostgroup, @default_schema,
       @schema_locked, @transaction_persistent, @fast_forward, @backend, @frontend,
       @max_connections = mysql([defaults_file, '-NBe', query].compact).chomp.split(%r{\t})
@@ -50,6 +52,7 @@ Puppet::Type.type(:proxy_mysql_user).provide(:proxysql, parent: Puppet::Provider
   def create
     name = @resource[:name]
     password = @resource.value(:password)
+    password_type = @resource.value(:password_type)
     active = @resource.value(:active) || 1
     use_ssl = @resource.value(:use_ssl) || 0
     default_hostgroup = @resource.value(:default_hostgroup) || 0
@@ -61,8 +64,10 @@ Puppet::Type.type(:proxy_mysql_user).provide(:proxysql, parent: Puppet::Provider
     frontend = @resource.value(:frontend) || 1
     max_connections = @resource.value(:max_connections) || 10_000
 
-    #_password = (password[0, 1] == '*') ? "'#{password}'" : "CACHING_SHA2_PASSWORD('#{password}')"
-    _password = "UNHEX('#{password}')"
+    _password = if password_type == 'sha2'
+                  "UNHEX('#{password}')"
+                else
+                  "'#{password}'"
 
     query = 'INSERT INTO mysql_users (`username`, `password`, `active`, `use_ssl`, `default_hostgroup`, `default_schema`,  ' \
             '`schema_locked`, `transaction_persistent`, `fast_forward`, `backend`, `frontend`, `max_connections`)  ' \
