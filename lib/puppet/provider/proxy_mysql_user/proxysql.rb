@@ -71,6 +71,7 @@ Puppet::Type.type(:proxy_mysql_user).provide(:proxysql, parent: Puppet::Provider
                   "'#{password}'"
                 end
 
+    print("create::password::#{password};;")
     query = 'INSERT INTO mysql_users (`username`, `password`, `active`, `use_ssl`, `default_hostgroup`, `default_schema`,  ' \
             '`schema_locked`, `transaction_persistent`, `fast_forward`, `backend`, `frontend`, `max_connections`)  ' \
             "VALUES ('#{name}', #{_password}, #{active}, #{use_ssl}, #{default_hostgroup}, '#{default_schema}',  " \
@@ -119,8 +120,10 @@ Puppet::Type.type(:proxy_mysql_user).provide(:proxysql, parent: Puppet::Provider
       # and value[0, 1] != '*'
       if field == 'password' && value.start_with?('0x24412430303524')
         values.push("`#{field}` = UNHEX('#{value}')")
+        print("update::password::UNHEX('#{value}');;")
       else
         values.push("`#{field}` = '#{value}'")
+        print("update::password::#{value};;")
       end
     end
     query = "UPDATE mysql_users SET #{values.join(', ')} WHERE username = '#{name}'"
