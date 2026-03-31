@@ -23,9 +23,7 @@ Puppet::Type.type(:proxy_mysql_user).provide(:proxysql, parent: Puppet::Provider
       @schema_locked, @transaction_persistent, @fast_forward, @backend, @frontend,
       @max_connections = mysql([defaults_file, '-NBe', query].compact).chomp.split(%r{\t})
 
-      if @password_hex.start_with?('0x24412430303524')
-        @password = @password_hex
-      end
+      @password = @password_hex if @password_hex.start_with?('0x24412430303524')
 
       new(name: name,
           ensure: :present,
