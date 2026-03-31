@@ -122,7 +122,8 @@ Puppet::Type.type(:proxy_mysql_user).provide(:proxysql, parent: Puppet::Provider
         values.push("`#{field}` = UNHEX('#{value}')")
         print("update::password::UNHEX('#{value}');;")
       else
-        values.push("`#{field}` = '#{value}'")
+        #values.push("`#{field}` = '#{value}'")
+        values.push("`#{field}` = UNHEX('#{value}')")
         print("update::password::#{value};;")
       end
     end
