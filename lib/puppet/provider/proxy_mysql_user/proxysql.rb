@@ -15,13 +15,17 @@ Puppet::Type.type(:proxy_mysql_user).provide(:proxysql, parent: Puppet::Provider
     # To reduce the number of calls to MySQL we collect all the properties in
     # one big swoop.
     users.map do |name|
-      query = "SELECT HEX(password), active, use_ssl, default_hostgroup, default_schema, schema_locked, transaction_persistent, fast_forward, backend, frontend, max_connections FROM mysql_users WHERE username = '#{name}'"
+      query = "SELECT HEX(password), password, active, use_ssl, default_hostgroup, default_schema, schema_locked, transaction_persistent, fast_forward, backend, frontend, max_connections FROM mysql_users WHERE username = '#{name}'"
 
       #SELECT username, CASE WHEN UPPER(SUBSTR(password, 2, 1)) = 'B' THEN HEX(password) ELSE password END AS password FROM mysql_users;
 
-      @password, @active, @use_ssl, @default_hostgroup, @default_schema,
+      @password_hex, @password, @active, @use_ssl, @default_hostgroup, @default_schema,
       @schema_locked, @transaction_persistent, @fast_forward, @backend, @frontend,
       @max_connections = mysql([defaults_file, '-NBe', query].compact).chomp.split(%r{\t})
+
+      if @password_hex.start_with?('0x24412430303524')
+        @password = @password_hex
+      end
 
       new(name: name,
           ensure: :present,
@@ -52,7 +56,6 @@ Puppet::Type.type(:proxy_mysql_user).provide(:proxysql, parent: Puppet::Provider
   def create
     name = @resource[:name]
     password = @resource.value(:password)
-    password_type = @resource.value(:password_type)
     active = @resource.value(:active) || 1
     use_ssl = @resource.value(:use_ssl) || 0
     default_hostgroup = @resource.value(:default_hostgroup) || 0
@@ -64,7 +67,8 @@ Puppet::Type.type(:proxy_mysql_user).provide(:proxysql, parent: Puppet::Provider
     frontend = @resource.value(:frontend) || 1
     max_connections = @resource.value(:max_connections) || 10_000
 
-    _password = if password_type == 'sha2'
+
+    _password = if password.start_with?('0x24412430303524')
                   "UNHEX('#{password}')"
                 else
                   "'#{password}'"
@@ -131,10 +135,6 @@ Puppet::Type.type(:proxy_mysql_user).provide(:proxysql, parent: Puppet::Provider
 
   def password=(value)
     @property_flush[:password] = value
-  end
-
-  def password_type=(value)
-    @property_flush[:password_type] = value
   end
 
   def active=(value)

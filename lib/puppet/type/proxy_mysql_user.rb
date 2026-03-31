@@ -18,6 +18,7 @@ Puppet::Type.newtype(:proxy_mysql_user) do
     return if self[:ensure] != :present
 
     #self[:password] = "*#{Digest::SHA1.hexdigest(Digest::SHA1.digest(self[:password])).upcase}" unless self[:password].start_with?('*') || self[:encrypt_password] != :true
+    self[:password] = "*#{Digest::SHA1.hexdigest(Digest::SHA1.digest(self[:password])).upcase}" unless (self[:password].start_with?('*') && self[:password].start_with?('0x24412430303524')) || self[:encrypt_password] != :true
   end
 
   newparam(:name, namevar: true) do
@@ -45,11 +46,6 @@ Puppet::Type.newtype(:proxy_mysql_user) do
   newproperty(:password) do
     desc 'The password of the user. You can use mysql_password() for creating a hashed password.'
     newvalue(%r{\w*})
-  end
-
-  newproperty(:password_type) do
-    desc 'The password type of the user. You can choose between "cleartext", "sha1" & "sha2".'
-    newvalues(:cleartext, :sha1, :sha2)
   end
 
   newproperty(:active) do
