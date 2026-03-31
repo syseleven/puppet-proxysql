@@ -67,11 +67,11 @@ Puppet::Type.type(:proxy_mysql_user).provide(:proxysql, parent: Puppet::Provider
     frontend = @resource.value(:frontend) || 1
     max_connections = @resource.value(:max_connections) || 10_000
 
-
     _password = if password.start_with?('0x24412430303524')
                   "UNHEX('#{password}')"
                 else
                   "'#{password}'"
+                end
 
     query = 'INSERT INTO mysql_users (`username`, `password`, `active`, `use_ssl`, `default_hostgroup`, `default_schema`,  ' \
             '`schema_locked`, `transaction_persistent`, `fast_forward`, `backend`, `frontend`, `max_connections`)  ' \
@@ -119,7 +119,7 @@ Puppet::Type.type(:proxy_mysql_user).provide(:proxysql, parent: Puppet::Provider
     values = []
     properties.each do |field, value|
       # and value[0, 1] != '*'
-      if field == 'password'
+      if field == 'password' && value.start_with?('0x24412430303524')
         values.push("`#{field}` = UNHEX('#{value}')")
       else
         values.push("`#{field}` = '#{value}'")
